@@ -15,6 +15,13 @@ import text
 import model as M
 import waveglow
 
+ipex_enabled = False
+if ipex_enabled:
+    try:
+        import intel_pytorch_extension as ipex
+    except:
+        ipex_enabled = False
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
@@ -32,8 +39,13 @@ def synthesis(model, text, alpha=1.0):
     text = np.stack([text])
     src_pos = np.array([i+1 for i in range(text.shape[1])])
     src_pos = np.stack([src_pos])
-    sequence = torch.from_numpy(text).cuda().long()
-    src_pos = torch.from_numpy(src_pos).cuda().long()
+    # sequence = torch.from_numpy(text).cuda().long()
+    # src_pos = torch.from_numpy(src_pos).cuda().long()
+    sequence = torch.from_numpy(text).long()
+    src_pos = torch.from_numpy(src_pos).long()
+    if ipex_enabled:
+        sequence = sequence.to(ipex.DEVICE)
+        src_pos = src_pos.to(ipex.DEVICE)
 
     with torch.no_grad():
         _, mel = model.module.forward(sequence, src_pos, alpha=alpha)
@@ -67,6 +79,8 @@ if __name__ == "__main__":
 
     print("use griffin-lim and waveglow")
     model = get_DNN(args.step)
+    if ipex_enabled:
+        model = model.to(ipex.DEVICE)
     data_list = get_data()
     for i, phn in enumerate(data_list):
         mel, mel_cuda = synthesis(model, phn, args.alpha)
@@ -83,6 +97,6 @@ if __name__ == "__main__":
     for i in range(100):
         for _, phn in enumerate(data_list):
             _, _, = synthesis(model, phn, args.alpha)
-        print(i)
+        # print(i)
     e_t = time.perf_counter()
     print((e_t - s_t) / 100.)

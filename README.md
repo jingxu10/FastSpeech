@@ -28,7 +28,10 @@ The Implementation of FastSpeech Based on Pytorch.
 Run `python3 train.py`.
 
 ## Evaluation
-Run `python3 eval.py`.
+1. Create directory *model_new*
+2. Download *pretrined model* from *Notes* section, and put it in the directory *model_new*
+3. Run `python3 eval.py --step=135000`.
+4. Edit line 18 of *eval.py* to enable/disable ipex `ipex_enabled = True/False`.
 
 ## Notes
 - In the paper of FastSpeech, authors use pre-trained Transformer-TTS model to provide the target of alignment. I didn't have a well-trained Transformer-TTS model so I use Tacotron2 instead.

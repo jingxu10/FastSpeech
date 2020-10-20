@@ -25,7 +25,8 @@ def get_mask_from_lengths(lengths, max_len=None):
     if max_len == None:
         max_len = torch.max(lengths).item()
 
-    ids = torch.arange(0, max_len, out=torch.cuda.LongTensor(max_len))
+    # ids = torch.arange(0, max_len, out=torch.cuda.LongTensor(max_len))
+    ids = torch.arange(0, max_len, out=torch.LongTensor(max_len))
     mask = (ids < lengths.unsqueeze(1)).bool()
 
     return mask
@@ -34,9 +35,10 @@ def get_mask_from_lengths(lengths, max_len=None):
 def get_WaveGlow():
     waveglow_path = os.path.join("waveglow", "pretrained_model")
     waveglow_path = os.path.join(waveglow_path, "waveglow_256channels.pt")
-    wave_glow = torch.load(waveglow_path)['model']
+    wave_glow = torch.load(waveglow_path, map_location=torch.device('cpu'))['model']
     wave_glow = wave_glow.remove_weightnorm(wave_glow)
-    wave_glow.cuda().eval()
+    # wave_glow.cuda().eval()
+    wave_glow.eval()
     for m in wave_glow.modules():
         if 'Conv' in str(type(m)):
             setattr(m, 'padding_mode', 'zeros')
