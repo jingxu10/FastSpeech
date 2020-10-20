@@ -15,7 +15,7 @@ import text
 import model as M
 import waveglow
 
-ipex_enabled = False
+ipex_enabled = True
 if ipex_enabled:
     try:
         import intel_pytorch_extension as ipex
@@ -29,7 +29,7 @@ def get_DNN(num):
     checkpoint_path = "checkpoint_" + str(num) + ".pth.tar"
     model = nn.DataParallel(M.FastSpeech()).to(device)
     model.load_state_dict(torch.load(os.path.join(hp.checkpoint_path,
-                                                  checkpoint_path))['model'])
+                                                  checkpoint_path), map_location=torch.device('cpu'))['model'])
     model.eval()
     return model
 
